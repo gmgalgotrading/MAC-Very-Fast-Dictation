@@ -1,16 +1,38 @@
-from parakeet_mlx import from_pretrained
+import mlx_whisper
 
-# since it can take time, we print a message to the user
-print("Loading voice recognition model (please wait)...")
+print("Cargando modelo Whisper Turbo (alta precisión médica)...")
 
-model = from_pretrained("mlx-community/parakeet-tdt-0.6b-v3")
-
+MODEL_PATH = "mlx-community/whisper-large-v3-turbo"
 
 def transcribe(audio_file_path):
-    result = model.transcribe(audio_file_path)
-    return result.text
+    try:
+        # Diccionario plano. Sin palabras en MAYÚSCULAS completas ni dos puntos,
+        # para evitar que Whisper se confunda y las imprima en el texto final.
+        contexto_clinico = (
+            "Academia Española de Medicina Regenerativa, ORTOBIOMSK, ITRAMED, Gonzalo Mora, "
+            "Logroño, Hernández, cirujano ortopédico, terapias biológicas, proloterapia, "
+            "plasma rico en plaquetas, PRP, células mesenquimales, médula ósea, "
+            "inyección intraarticular, intraósea, inyecciones epidurales caudales, suero, "
+            "dextrosa, plastias intervenidas, meniscectomía, tejidos laxos, colagénicos, "
+            "hueso subcondral, membrana sinovial, entesis, cartílago, menisco, meniscopatía, "
+            "lesiones condrales, parameniscitis, inestabilidad crónica, inestabilidad lumbopélvica, "
+            "ligamentos iliolumbares, interespinales, coronarios, facetas, disco, discopatía, "
+            "artrosis de rodilla, rodilla artrósica, ligamento cruzado, lateral interno, "
+            "lateral externo, laxitud ligamentosa, bostezo, cajón anterior, estenosis de canal lumbar, "
+            "clínica radicular, rizartrosis, biotensegridad, fundamento fisiopatológico, "
+            "respuesta tisular, sinergismo."
+        )
 
+        result = mlx_whisper.transcribe(
+            audio_file_path,
+            path_or_hf_repo=MODEL_PATH,
+            language="es",
+            initial_prompt=contexto_clinico
+        )
+        return result["text"]
+    except Exception as e:
+        print(f"Error en transcripción: {e}")
+        return ""
 
 if __name__ == "__main__":
-    result = transcribe("audio_file.wav")
-    print(result)
+    print(transcribe("recording.wav"))

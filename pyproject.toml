@@ -1,11 +1,11 @@
 [project]
 name = "veryfastdictation"
 version = "0.2.0"
-description = "Nueva versión con parakeet V3 multilingüe"
+description = "Nueva versión con Whisper"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "parakeet-mlx>=0.5.1",
+    "mlx-whisper>=0.4.3",
     "pynput>=1.8.1",
     "pyperclip>=1.9.0",
     "pyside6>=6.9.1",
