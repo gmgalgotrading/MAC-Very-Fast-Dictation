@@ -1,7 +1,7 @@
 [project]
 name = "veryfastdictation"
 version = "0.2.0"
-description = "Nueva versión con parakeet V3 multilingÜe"
+description = "Nueva versión con parakeet V3 multilingüe"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
