@@ -673,3 +673,219 @@ git add ANOTACIONES-sobre-MAC-Very-Fast-Dictation.md
 git commit -m "Añadir archivo de anotaciones"
 
 git push origin master
+
+
+
+
+
+Has dicho
+
+ERROR:
+
+"""
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git add ANOTACIONES-sobre-MAC-Very-Fast-Dictation.md
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git commit -m "Añadir archivo de anotaciones"
+
+[master 983eaa9] Añadir archivo de anotaciones
+
+ Committer: Gonzalo Mora <drgonzalomora@MacBook-Pro-3.local>
+
+Your name and email address were configured automatically based
+
+on your username and hostname. Please check that they are accurate.
+
+You can suppress this message by setting them explicitly. Run the
+
+following command and follow the instructions in your editor to edit
+
+your configuration file:
+
+
+
+  git config --global --edit
+
+
+
+After doing this, you may fix the identity used for this commit with:
+
+
+
+  git commit --amend --reset-author
+
+
+
+ 1 file changed, 675 insertions(+)
+
+ create mode 100644 ANOTACIONES-sobre-MAC-Very-Fast-Dictation.md
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git push origin master
+
+To https://github.com/gmgalgotrading/MAC-Very-Fast-Dictation.git
+
+ ! [rejected]    master -> master (fetch first)
+
+error: failed to push some refs to 'https://github.com/gmgalgotrading/MAC-Very-Fast-Dictation.git'
+
+hint: Updates were rejected because the remote contains work that you do
+
+hint: not have locally. This is usually caused by another repository pushing
+
+hint: to the same ref. You may want to first integrate the remote changes
+
+hint: (e.g., 'git pull ...') before pushing again.
+
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation %
+
+"""
+
+
+
+
+
+
+
+## Gemini ha dicho
+
+¡No pasa nada! Este es otro de los errores más clásicos cuando empezamos a usar Git.
+
+Si te fijas en el texto de tu consola, en realidad están ocurriendo dos cosas distintas (un aviso y un error real). El error principal dice: *"Updates were rejected because the remote contains work that you do not have locally"*. Esto significa que en tu repositorio de GitHub en internet hay cambios o archivos que no tienes en tu ordenador. Por seguridad, Git te bloquea la subida para evitar que borres lo que hay en la nube.
+
+Para solucionarlo, tenemos que descargar primero lo de la nube, juntarlo con tu archivo de anotaciones, y volver a subirlo todo. Aquí tienes los pasos exactos:
+
+### 1. Configurar tu identidad en Git (Para quitar el aviso)
+
+El primer bloque de texto te avisa de que Git no sabe cómo te llamas ni cuál es tu correo, así que ha usado el nombre interno de tu Mac (`drgonzalomora...`). Vamos a dejarlo configurado para siempre. Ejecuta estos dos comandos (cambiando el texto entre comillas por tus datos reales):
+
+Bash
+
+```
+git config --global user.name "Tu Nombre"
+```
+
+Bash
+
+```
+git config --global user.email "tu_correo@ejemplo.com"
+```
+
+### 2. Descargar los cambios de GitHub
+
+Ahora vamos a traernos a tu ordenador lo que sea que haya distinto en GitHub. Para que lo integre limpiamente con el commit que acabas de hacer, ejecuta este comando:
+
+Bash
+
+```
+git pull origin master --rebase
+```
+
+*(Esto descarga las novedades de internet y coloca tu nuevo archivo `.md` justo por encima, dejándolo todo ordenado).*
+
+### 3. Volver a subir todo a la nube
+
+Una vez que el paso anterior termine correctamente (te dirá algo como "Successfully rebased and updated"), ya tienes vía libre para enviar tus anotaciones. Ejecuta el mismo comando que intentaste antes:
+
+Bash
+
+```
+git push origin master
+```
+
+Si todo va bien, te pedirá el usuario y el Token de nuevo, y esta vez sí subirá tu archivo `.md` a tu repositorio.
+
+¿Te ha dejado subirlo a la primera o te ha saltado algún aviso de conflicto de archivos al hacer el paso 2?
+
+
+
+
+
+Has dicho
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git config --global user.name "Gonzalo Mora"
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git config --global user.email "gmg@itramed.com"
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % git pull origin master --rebase
+
+error: cannot pull with rebase: You have unstaged changes.
+
+error: please commit or stash them.
+
+(base) drgonzalomora@MacBook-Pro-3 Very-Fast-Dictation % 
+
+
+
+
+
+
+
+## Gemini ha dicho
+
+¡Casi lo tenemos! Este error de Git es una medida de seguridad muy útil. El mensaje *"You have unstaged changes"* significa que tienes algunos archivos modificados en tu carpeta que todavía no has "empaquetado" en un commit (probablemente el `pyproject.toml` o los cambios del código que hicimos en los pasos anteriores).
+
+Git no te deja descargar cosas de internet si tienes trabajo a medias sin guardar, para evitar sobrescribir nada por accidente.
+
+Para solucionarlo, vamos a usar una herramienta de Git llamada **"stash"**, que es como un "cajón" donde metemos los archivos temporalmente, descargamos lo de internet, y luego los volvemos a sacar del cajón.
+
+Ejecuta estos comandos en tu terminal uno a uno:
+
+**1. Guarda tus cambios sin confirmar en el "cajón" temporal:**
+
+Bash
+
+```
+git stash
+```
+
+**2. Ahora sí, descarga las novedades de tu GitHub (el comando que te falló antes):**
+
+Bash
+
+```
+git pull origin master --rebase
+```
+
+**3. Saca tus archivos modificados del cajón para dejarlos como estaban:**
+
+Bash
+
+```
+git stash pop
+```
+
+*(Nota: Si al hacer esto te sale algún mensaje de "CONFLICT", dímelo antes de seguir. Si te dice "Dropped refs...", todo ha ido perfecto).*
+
+**4. Sube todo por fin a GitHub:**
+
+Bash
+
+```
+git push origin master
+```
+
+¿Te ha funcionado el `push` final o te ha dado algún aviso en el paso 3?
+
+
+
+
+
+Has dicho
+
+Todo correcto
+
+
+
+
+
+## Gemini ha dicho
+
+¡Genial! Me alegro mucho de que haya subido sin problemas.
+
+Ese flujo de trabajo que acabas de hacer (guardar en el cajón, descargar lo nuevo, sacar del cajón y subir) es el pan de cada día cuando usas Git. El comando `stash` te va a salvar la vida muchísimas veces cuando tengas trabajo a medias y necesites actualizar tu código para que no haya conflictos.
+
+Ahora que ya tienes tu archivo de anotaciones subido y a salvo en tu repositorio, la gente solo lo verá si hace clic en los archivos del código.
+
+¿Te gustaría que modifiquemos el archivo `README.md` para poner un enlace bien visible en la portada de tu proyecto que lleve directamente a tus notas?
