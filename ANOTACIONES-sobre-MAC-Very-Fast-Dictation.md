@@ -932,13 +932,44 @@ Pega esta ruta exacta y pulsa Intro: `~/.cache/huggingface/hub`
 
 
 
+# PROYECTO:
+
+## Gemini ha dicho
+
+He analizado a fondo el documento que has compartido Google Gemini]. Contiene ideas arquitectónicas brillantes que pueden elevar tu aplicación de un simple "dictado rápido" a un **asistente clínico integral y autónomo**, manteniendo siempre la privacidad de los datos en tu propio Mac.
+
+Aquí tienes las 4 grandes mejoras que podemos implementar en nuestra versión actual basándonos en ese documento, ordenadas por impacto:
+
+### 1. Estructuración Clínica Automática (LLM Local vía Ollama)
+
+Actualmente, Whisper te devuelve exactamente lo que has dicho, palabra por palabra. El documento sugiere añadir un paso intermedio donde ese texto bruto se envía a un modelo de lenguaje local (como Llama 3.2) a través de Ollama Google Gemini].
+
+- **¿Qué conseguiríamos?** En lugar de pegar una parrafada, el sistema redactaría automáticamente una historia clínica formal en formato **SOAP** (Subjetivo, Objetivo, Análisis y Plan) Google Gemini].
+- **Privacidad total (RGPD):** Al ejecutarse mediante Ollama en tu Mac, los datos de salud de los pacientes jamás pisan internet, cumpliendo estrictamente con la normativa europea Google Gemini].
+
+### 2. Pegado Nativo e Invisible (AppKit + Quartz)
+
+Aunque nuestra solución actual con `pynput` y `AppleScript` funciona bien para volver a la aplicación activa, el documento plantea una solución mucho más elegante y profesional usando el framework nativo de Apple (`pyobjc`) Google Gemini].
+
+- **¿Qué conseguiríamos?** Sustituiríamos la simulación de teclado actual por una inyección de eventos directa al servidor de ventanas de macOS mediante `Quartz.CGEvent` y manipularíamos el portapapeles con `NSPasteboard` Google Gemini]. Esto garantiza un pegado instantáneo, 100% a prueba de fallos y sin el más mínimo parpadeo de ventanas.
+
+### 3. Diarización (Identificación de Hablantes)
+
+Si vas a grabar conversaciones completas entre tú y el paciente, Whisper transcribe todo como un único bloque de texto. El documento sugiere integrar un modelo de "Speaker Diarization" (como *Pyannote*) Google Gemini].
+
+- **¿Qué conseguiríamos?** El sistema etiquetaría el texto automáticamente (ej. *Médico: ¿Dónde le duele? / Paciente: En la rodilla*). Esto es crucial si posteriormente vas a pasar ese texto a un LLM, ya que le da un contexto perfecto para saber qué síntomas refiere el paciente y qué conclusiones saca el doctor Google Gemini].
+
+### 4. Empaquetado como Aplicación Nativa (`.app`)
+
+Ahora mismo tienes que abrir la terminal y ejecutar `uv run main.py` cada vez que quieres usar la herramienta. El apunte final del documento propone utilizar `PyInstaller` para encapsular todo el código (incluyendo la pesada librería de Whisper) en una aplicación nativa de macOS Google Gemini].
+
+- **¿Qué conseguiríamos?** Un icono ejecutable que puedes arrastrar a tu carpeta de Aplicaciones y configurarlo para que arranque silenciosamente en la barra de menú cada vez que enciendes el ordenador Google Gemini].
+
+------
+
+**¿Por dónde te gustaría empezar?** Podemos integrar primero **Ollama** para que te devuelva las historias clínicas perfectamente ordenadas en formato SOAP, o podemos optimizar el sistema de **pegado nativo con Quartz** para hacer la app a prueba de balas antes de meterle más inteligencia.
 
 
-ANATOMÍA Y PATOLOGÍA DE LA DISCOPATÍA LUMBAR Si lo trasladamos a la discopatía lumbar, lo que hemos comentado, muchos de los tratamientos que solo abordan una estructura, una faceta o un disco a nivel lumbar, fracasan porque no se está dando estabilidad a esa pelvis o a esa zona lumbar. Y al final se está tratando el problema biológico, pero los tornillos siguen flojos y dejan de funcionar. 
-
-
-
-ANATOMÍA Y PATOLOGÍA Vemos y tratamos el deterioro biológico con las células que podemos aportar o las distintas técnicas que vayamos a utilizar, orientado todo a conseguir una mejor función y un mejor resultado. ANATOMÍA Y PATOLOGÍA Vemos y, si lo hubiéramos en forma de pirámide, bueno, la parte de abajo estaría la estabilidad mecánica, a partir de ahí construimos el estímulo biológico y de esa manera conseguimos una mejor solución. ANATOMÍA Y PATOLOGÍA Vemos y, al final, esto es una situación... 
 
 
 
@@ -946,4 +977,68 @@ ANATOMÍA Y PATOLOGÍA Vemos y tratamos el deterioro biológico con las células
 
 
 
-...con cajón anterior y en la resonancia magnética no habla de lesiones ligamentosas, insisto, porque es una imagen estática y no es dinámica, solo habla de signos, una parameniscitis que no es otra cosa que un signo de inestabilidad. La lesión estructural combinada, meniscopatía e inestabilidad, esto genera un círculo vicioso, inestabilidad, sobrecarga, dolor crónico, etc. ¿Cuál es el planteamiento que nosotros hicimos? Usar médula... 
+----------
+
+----
+
+----
+
+RESUMEN ACTUAL DE CONFERENCIA:<think>
+
+</think>
+
+### TEMA PRINCIPAL Y OBJETIVO
+
+La conferencia aborda la sinergia terapéutica entre la proloterapia y otras técnicas biológicas (PRP, células mesenquimales) para tratar patologías articulares crónicas. El objetivo central es combinar la estabilización biomecánica mediante la inducción de una inflamación controlada que reanude la cascada de curación, con terapias regenerativas, abordando la articulación como un órgano completo y no solo como una pieza aislada.
+
+### CONCEPTOS FISIOPATOLÓGICOS Y BIOMECÁNICOS
+
+Se explica que el daño articular crónico surge de una inestabilidad dinámica oculta en pruebas estáticas, que actúa como un fallo en los anclajes o tornillos de una estructura. Esta laxitud en las entesis y ligamentos genera fuerzas destructivas que degradan mecánicamente el cartílago, el hueso subcondral y la membrana sinovial, creando un círculo vicioso de dolor y deterioro. El concepto de biotensegridad es fundamental: sin restaurar la estabilidad mecánica de los tejidos colagénicos, cualquier intervención biológica interna será efímera, similar a pintar una casa con cimientos inestables.
+
+### ARSENAL TERAPÉUTICO Y MECANISMOS DE ACCIÓN
+
+El arsenal se divide en dos pilares complementarios: la proloterapia, que proporciona estabilidad mecánica mediante la tensabilidad de los tejidos laxos, y las terapias biológicas (PRP, células madre, suero condicionado), que promueven la regeneración celular. La lógica clínica dicta que la mejora biomecánica debe preceder o acompañar a la intervención biológica para asegurar resultados sostenibles en el tiempo, evitando el fracaso de tratamientos que solo abordan la patología biológica ignorando la inestabilidad estructural subyacente.
+
+### CASOS CLÍNICOS Y EJEMPLOS PRÁCTICOS
+
+Se presentan múltiples escenarios donde la combinación de técnicas supera a las monoterapias: un paciente con lesión del ligamento cruzado y meniscopatía tratada con proloterapia en los ligamentos laterales e intrameniscal junto con células madre; casos de síndrome postmenisectomía donde la inestabilidad residual se corrige con proloterapia para mejorar la función; y pacientes con estenosis lumbar o rizartrosis inestable que requieren estabilización de la zona afectada antes o simultáneamente a la inyección de factores biológicos para obtener una recuperación funcional óptima.
+
+### CONCLUSIONES CLAVE
+
+El enfoque exitoso requiere tratar la unidad funcional completa, identificando y corrigiendo la inestabilidad dinámica como base para cualquier regeneración tisular. La proloterapia es la herramienta clave para restablecer la biotensegridad, actuando como cimiento indispensable para que las terapias biológicas tengan utilidad duradera. Se concluye que no existe una "bala mágica", sino la necesidad de un abordaje integral que combine la corrección mecánica con la biología para revertir el daño crónico.
+
+
+
+
+
+
+
+- Antecedentes: Sin antecedentes de traumatismo ni golpes previos.
+- Motivo de consulta: Dolor a nivel de la rodilla derecha.
+- Tiempo de evolución: Desde hace varios meses.
+- Sintomatología actual: Dolor que aumenta con el ejercicio, especialmente al bajar escaleras. Dolor localizado en la zona lateral.
+- Exploración física: Hidrops, bostezo medial y bostezo lateral discreto, cajón anterior positivo.
+- Pruebas complementarias: Resonancia magnética.
+- Diagnóstico: Inestabilidad multidireccional de rodilla, con molestias a nivel del menisco y cartílago de la rótula.
+- Plan de tratamiento: Proloterapia para retensado de ligamentos y plasma rico en plaquetas para mejorar cartílago y disminuir inflamación.
+
+
+
+```
+ollama create qwen3.5 -f Modelfile
+```
+
+### TEMA PRINCIPAL Y OBJETIVO
+La conferencia aborda la sinergia terapéutica entre la terapia por ondas de choque (PRT) y el plasma rico en plaquetas (PRP) para el tratamiento de tendinopatías y síndromes dolorosos, como el hombro congelado o la epicondilitis, con el fin de optimizar la recuperación funcional y reducir el dolor mediante mecanismos biológicos complementarios.
+
+### CONCEPTOS FISIOPATOLÓGICOS Y BIOMECÁNICOS
+Ambas técnicas comparten mecanismos de acción fundamentales como la estimulación angiogénica, el reclutamiento de células madre hacia el foco de lesión, la activación de factores de crecimiento *in situ* y un potente plan antiinflamatorio y antifibrótico, lo que justifica su uso combinado para potenciar la regeneración tisular.
+
+### ARSENAL TERAPÉUTICO Y MECANISMOS DE ACCIÓN
+El arsenal se basa en la combinación secuencial de ondas de choque (focales o radiales) y PRP, donde la energía mecánica de las ondas actúa de forma inmediata para aliviar el dolor y preparar el tejido, mientras que el PRP, con un efecto biológico más tardío, promueve la reparación heterogénea de las fibras tendinosas y acelera la recuperación global, especialmente en articulaciones como la rodilla.
+
+### CASOS CLÍNICOS Y EJEMPLOS PRÁCTICOS
+Se presentan estudios prospectivos aleatorizados que demuestran la superioridad de la combinación de ambas terapias sobre el uso aislado, mostrando mejoras significativas en escalas de dolor (EVA), funcionalidad (Constante, UCLA) y calidad de vida en un mes, con una recuperación completa del rango de movimiento a los seis meses, así como la aplicación intratendinosa guiada por ecografía en casos de calcificaciones y rotaciones parciales.
+
+### CONCLUSIONES CLAVE
+La estrategia óptima consiste en iniciar con tres sesiones de ondas de choque para preparar el lecho biológico y aplicar el PRP a los 15 días, aprovechando el tiempo necesario para que una técnica apoye a la otra, garantizando así resultados eficaces con efectos secundarios leves y transitorios como el enrojecimiento o pequeños hematomas.
