@@ -128,6 +128,10 @@ Al hacer clic en el icono de la barra de menú, se desplegarán todas las opcion
 # A. Selección de Modo de IA (El Cerebro):
 Antes de introducir ningún texto o audio, debes elegir cómo quieres que la IA procese la información.
 
+```
+![Menú de Opciones](images/menu_opciones.png)
+```
+
 🧠 Modo: Consulta Clínica (Por Defecto): Optimizado para estructurar diálogos médico-paciente en tiempo real. Utiliza el glosario de metáforas y genera un informe SOAP.
 
 🧠 Modo: Resumen de Historial: Diseñado para ordenar cronológicamente volcados de texto caóticos, pruebas y cirugías previas, proponiendo un plan terapéutico justificado.
@@ -183,7 +187,7 @@ Al terminar, la aplicación pegará automáticamente el resultado si tienes un e
 
 ------
 ## 🛠️ Problemas Comunes
-    
+
    📋 **El texto estructurado no se pega automáticamente** 
 
 Si la aplicación graba, transcribe y muestra el texto final en la Ventana Fantasma, pero una vez terminada la tarea no pega el resultado en tu pantalla, significa que macOS está bloqueando a la aplicación. Debes concederle permisos de Accesibilidad al programa que esté ejecutando este script de Python.
