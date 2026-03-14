@@ -168,7 +168,7 @@ Al terminar, el informe clínico definitivo se pegará instantáneamente en la v
 
 (💡 Tip: Recuerda que también puedes seleccionar cualquier texto caótico, copiarlo y pulsar la tecla Option / Alt dos veces rápidas para que la IA lo procese directamente desde el portapapeles).
 
-Resultado: Si usaste un atajo de teclado, el texto final se pegará automáticamente donde dejaste el cursor. Si procesaste un archivo o conferencia larga, el texto se copiará en tu portapapeles y macOS lanzará una Alerta Persistente en pantalla para avisarte de que el informe está listo para ser pegado (Cmd + V).
+Resultado: Si usaste un atajo de teclado, el texto final se pegará automáticamente donde dejaste el cursor. Si procesaste un archivo o conferencia larga, el texto se copiará en tu portapapeles y macOS lanzará una Alerta Persistente en pantalla para avisarte de que el informe está listo para ser pegado (Cmd + ).
 ------
 
 ## ⌨️ Flujo de Trabajo (Atajos Rápídos)
@@ -194,7 +194,7 @@ Asegúrate de que el interruptor esté activado para tu terminal (ej. Terminal, 
 
 💡 Consejo Pro: Si por motivos de seguridad no quieres darle permisos totales de accesibilidad a tu terminal principal o a tu editor de código, instala una segunda aplicación de terminal (como Warp o iTerm). Usa esta segunda terminal exclusivamente para ejecutar Very Fast Dictation. De este modo, podrás otorgarle los permisos de accesibilidad de forma totalmente segura y aislada.
 
-    🎙️ **El cartel de grabando aparece pero falla la transcripción**  
+   🎙️ **El cartel de grabando aparece pero falla la transcripción**  
 
 Asegúrate de que la terminal tiene permiso para usar tu micrófono.
 
