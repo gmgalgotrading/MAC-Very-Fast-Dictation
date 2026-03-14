@@ -128,27 +128,31 @@ Al hacer clic en el icono de la barra de menú, se desplegarán todas las opcion
 # A. Selección de Modo de IA (El Cerebro):
 Antes de introducir ningún texto o audio, debes elegir cómo quieres que la IA procese la información.
 
+<<<<<<< HEAD
 ![Menú de Opciones](images/menu_opciones.png)
+=======
+![](/Users/drgonzalomora/Very-Fast-Dictation/images/menu_opciones.png)
+>>>>>>> 4c0a0fa (Colocar imagen del menú en su posición exacta)
 
-🧠 Modo: Consulta Clínica (Por Defecto): Optimizado para estructurar diálogos médico-paciente en tiempo real. Utiliza el glosario de metáforas y genera un informe SOAP.
+🧠 **Modo: Consulta Clínica (Por Defecto):** Optimizado para estructurar diálogos médico-paciente en tiempo real. Utiliza el glosario de metáforas y genera un informe SOAP.
 
-🧠 Modo: Resumen de Historial: Diseñado para ordenar cronológicamente volcados de texto caóticos, pruebas y cirugías previas, proponiendo un plan terapéutico justificado.
+🧠 **Modo: Resumen de Historial:** Diseñado para ordenar cronológicamente volcados de texto caóticos, pruebas y cirugías previas, proponiendo un plan terapéutico justificado.
 
-🧠 Modo: Conferencia: Preparado para textos masivos. Activa el "Troceador Inteligente" para conferencias largas, elimina el Spanglish y extrae conclusiones académicas.
+🧠 **Modo: Conferencia:** Preparado para textos masivos. Activa el "Troceador Inteligente" para conferencias largas, elimina el Spanglish y extrae conclusiones académicas.
 
 # B. Métodos de Entrada de Datos:
 Una vez elegido el modo, tienes 4 formas de enviar información a la IA:
 
-🎙️ Grabar con micrófono (Doble Ctrl): Es la vía principal para la Consulta Clínica. Sitúa el cursor en tu software médico y pulsa la tecla Control (Ctrl) dos veces rápidas. Aparecerá un cartel de "Grabando...". Habla con tu paciente y pulsa Ctrl una vez para detener y procesar.
+🎙️ **Grabar con micrófono (Doble Ctrl):** Es la vía principal para la Consulta Clínica. Sitúa el cursor en tu software médico y pulsa la tecla Control (Ctrl) dos veces rápidas. Aparecerá un cartel de "Grabando...". Habla con tu paciente y pulsa Ctrl una vez para detener y procesar.
 
-🎵 Subir y procesar archivo de AUDIO: Abre un explorador de archivos para seleccionar grabaciones médicas previas (.mp3, .wav, .m4a). Ideal para transcribir ponencias o notas de voz grabadas con el móvil.
+🎵 **Subir y procesar archivo de AUDIO:** Abre un explorador de archivos para seleccionar grabaciones médicas previas (.mp3, .wav, .m4a). Ideal para transcribir ponencias o notas de voz grabadas con el móvil.
 
-📄 Subir y procesar archivo de TEXTO: Permite cargar documentos médicos extensos (.txt, .md), perfecto para procesar historiales largos o transcripciones de conferencias enteras.
+📄 **Subir y procesar archivo de TEXTO:** Permite cargar documentos médicos extensos (.txt, .md), perfecto para procesar historiales largos o transcripciones de conferencias enteras.
 
-📋 Procesar PORTAPAPELES (Doble Option/Alt): Selecciona cualquier texto en tu Mac (un PDF, un email, notas), cópialo (Cmd + C) y pulsa la tecla Option / Alt (⌥) dos veces rápidas. La IA lo leerá instantáneamente desde la memoria.
+📋 **Procesar PORTAPAPELES (Doble Option/Alt):** Selecciona cualquier texto en tu Mac (un PDF, un email, notas), cópialo (Cmd + C) y pulsa la tecla Option / Alt (⌥) dos veces rápidas. La IA lo leerá instantáneamente desde la memoria.
 
 # CONSULTA CLINICA
-Empieza a dictar:
+**Empieza a dictar:**
 
 Sitúa el cursor en cualquier campo de texto de cualquier aplicación (tu software de historia clínica, Word, un email, etc.).
 
@@ -160,6 +164,8 @@ Dicta tu evolución clínica o notas médicas.
 
 Pulsa la tecla **Control (Ctrl) una sola vez para detener** la grabación.
 
+
+
 # La Magia de la IA:
 
 El sistema aislará tu voz del ruido de fondo, transcribirá el texto y la Inteligencia Artificial comenzará a estructurarlo.
@@ -170,8 +176,9 @@ Al terminar, el informe clínico definitivo se pegará instantáneamente en la v
 
 (💡 Tip: Recuerda que también puedes seleccionar cualquier texto caótico, copiarlo y pulsar la tecla Option / Alt dos veces rápidas para que la IA lo procese directamente desde el portapapeles).
 
-Resultado: Si usaste un atajo de teclado, el texto final se pegará automáticamente donde dejaste el cursor. Si procesaste un archivo o conferencia larga, el texto se copiará en tu portapapeles y macOS lanzará una Alerta Persistente en pantalla para avisarte de que el informe está listo para ser pegado (Cmd + ).
-------
+#### Resultado: Si usaste un atajo de teclado, el texto final se pegará automáticamente donde dejaste el cursor. Si procesaste un archivo o conferencia larga, el texto se copiará en tu portapapeles y macOS lanzará una Alerta Persistente en pantalla para avisarte de que el informe está listo para ser pegado (Cmd + ).
+
+
 
 ## ⌨️ Flujo de Trabajo (Atajos Rápídos)
 
@@ -200,8 +207,9 @@ Asegúrate de que el interruptor esté activado para tu terminal (ej. Terminal, 
 
 Asegúrate de que la terminal tiene permiso para usar tu micrófono.
 
-Ve a Ajustes del Sistema -> Privacidad y seguridad -> Micrófono y comprueba que la pestaña de tu terminal esté activada.
-------
+#### Ve a Ajustes del Sistema -> Privacidad y seguridad -> Micrófono y comprueba que la pestaña de tu terminal esté activada.
+
+
 
 ## 🔒 Privacidad y Aviso Legal
 
