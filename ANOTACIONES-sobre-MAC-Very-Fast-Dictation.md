@@ -971,7 +971,92 @@ Ahora mismo tienes que abrir la terminal y ejecutar `uv run main.py` cada vez qu
 
 
 
+---
 
+Ahora quiero integrar una nueva mejora en la aplicación. Vamos a ver como lo planteamos de una forma muy profesional:
+
+"""
+
+Empaquetado como Aplicación Nativa (.app)
+
+
+
+Ahora mismo tienes que abrir la terminal y ejecutar uv run main.py cada vez que quieres usar la herramienta. El apunte final del documento propone utilizar PyInstaller para encapsular todo el código (incluyendo la pesada librería de Whisper) en una aplicación nativa de macOS Google Gemini].
+
+¿Qué conseguiríamos? Un icono ejecutable que puedes arrastrar a tu carpeta de Aplicaciones y configurarlo para que arranque silenciosamente en la barra de menú cada vez que enciendes el ordenador Google Gemini].
+
+"""
+
+
+
+--------
+
+
+
+# MEJORAS
+
+Es un ejercicio excelente. Has construido una herramienta que, sinceramente, **supera a muchas soluciones comerciales de pago** que hay ahora mismo en el mercado. Tienes privacidad total (cero envíos a la nube, cumpliendo la Ley de Protección de Datos a rajatabla), latencia casi nula gracias al chip M4 y a la memoria unificada, y un enrutamiento inteligente de modelos (Qwen2.5 para velocidad, DeepSeek-R1 para razonamiento).
+
+Sin embargo, viéndolo con ojos de ingeniero de software y auditor clínico, la aplicación tiene algunos puntos ciegos. Aquí tienes mi crítica constructiva y las mejoras que realmente marcarían la diferencia en un entorno médico profesional:
+
+### 1. La "Caja Negra" y la Trazabilidad Legal (Crítica principal)
+
+**El problema:** Actualmente, dictas al micrófono, la IA procesa y te pega el resultado final estructurado. Pero, ¿qué pasa si el informe final dice "100 mg" y tú querías decir "10 mg"? No tienes forma de saber si fue un error tuyo al hablar, un error de transcripción de Whisper o una alucinación de DeepSeek.
+
+**La mejora:** Crear un sistema de **"Caja Negra Clínica" (Logs locales)**.
+
+- El programa debería guardar automáticamente un archivo de texto diario (ej. `log_2026-10-25.txt`) en una carpeta oculta.
+- En ese archivo se guardaría: *Hora exacta | Texto Bruto de Whisper | Texto Estructurado de la IA*.
+- *Impacto:* Si alguna vez tienes una duda médico-legal o un error en una receta, puedes abrir ese archivo y verificar exactamente qué dictaste. Coste de tiempo: 0 segundos en tu flujo de trabajo.
+
+### 2. La Rigidez del Glosario (Mantenibilidad)
+
+**El problema:** El `GLOSARIO_CLINICO` es el corazón de tu aplicación, pero ahora mismo está "incrustado" dentro del código Python (`llm.py`). Si mañana quieres añadir la metáfora de "como un cable deshilachado", tienes que abrir el código fuente, tener cuidado de no borrar una comilla y guardar. Es peligroso a largo plazo.
+
+**La mejora:** Extraer el glosario a un archivo de texto simple llamado `diccionario_metáforas.txt`.
+
+- El programa leería ese archivo al arrancar.
+- *Impacto:* Podrías abrir un simple bloc de notas, añadir tus nuevas expresiones en 5 segundos y guardarlo sin tocar jamás el código del programa.
+
+### 3. El Filtro Anti-Silencios y Ruidos (VAD - Voice Activity Detection)
+
+**El problema:** Whisper es un modelo brillante, pero tiene un defecto conocido: cuando grabas silencio, ruido de fondo (como el movimiento de una silla) o respiraciones fuertes, intenta buscar palabras donde no las hay y genera "alucinaciones" (como los textos de Amara.org que tuvimos que filtrar manualmente).
+
+**La mejora:** Implementar **Silero VAD** justo antes de Whisper.
+
+- Es un minimodelo ultrarrápido que analiza el audio en milisegundos y le dice a Whisper: "Oye, en este trozo de audio no hay voz humana, no intentes transcribirlo".
+- *Impacto:* Eliminas el 100% de las alucinaciones de Whisper por ruido de fondo y haces que la transcripción sea aún más rápida, porque Whisper no pierde tiempo procesando silencios.
+
+### 4. Límite de Memoria en "Modo Conferencia" (Context Window)
+
+**El problema:** En tu `llm.py`, tenemos configurado `"num_ctx": 8192` (unos 8.000 tokens, que son unas 6.000 palabras). Para una consulta o un historial, vas sobradísimo. Pero si un día grabas una ponencia de 2 horas en un congreso y se la pasas, el texto superará ese límite. La IA cortará el texto a la mitad, "olvidará" el principio de la charla y el resumen será deficiente o dará error.
+
+**La mejora:** Implementar un **Troceador Inteligente (Chunking)** para textos largos.
+
+- Si el sistema detecta que el texto tiene más de X palabras, lo divide en dos bloques lógicos, hace un resumen de cada uno y luego unifica ambos resúmenes.
+- *Impacto:* Podrías transcribir conferencias enteras de toda una mañana sin que el modelo de 14B colapse la memoria de tu Mac Mini.
+
+### 5. Confirmación Visual (Feedback de interfaz)
+
+**El problema:** El atajo de teclado de auto-pegado (Doble Option) es magia pura, pero si copias un historial masivo, DeepSeek-R1:14B puede tardar 1 o 2 minutos. Durante ese tiempo, tienes una notificación amarilla arriba a la derecha, pero no sabes si la IA se ha quedado "colgada" o si está trabajando bien.
+
+**La mejora:** Integrar el *stream* (el texto que se va generando en vivo en la terminal) en una pequeña ventana flotante y semitransparente de la aplicación.
+
+- *Impacto:* Verías en tiempo real cómo la IA va redactando tu historia mientras tú haces otras cosas. Da mucha tranquilidad mental ver que la máquina está "escribiendo", igual que cuando usas la web de ChatGPT.
+
+------
+
+**Resumen de prioridades:**
+
+Si yo fuera el director tecnológico de tu clínica, te diría que la aplicación está lista para producción hoy mismo. Pero si queremos afilarla, la **Mejora 1 (Logs de trazabilidad)** es obligatoria por seguridad médica, y la **Mejora 2 (Glosario externo)** te va a dar mucha comodidad.
+
+¿Cómo lo ves? ¿Hay alguna de estas áreas en las que te gustaría que nos metiéramos a picar código, o se te ocurre alguna necesidad del día a día en la consulta que no hayamos cubierto?
+
+
+
+
+
+​    `"historial": """Actúa como un jefe de traumatología brillante y experto en síntesis clínica. Se te proporcionará un volcado bruto de notas de historia clínica con ruido administrativo y abreviaturas médicas (MO = Médula Ósea, IA = Intraarticular, LLI/LLE = Ligamentos Laterales, ECO = Ecografía, CAR = Cirugía Artroscópica, PROLO = Proloterapia, LLI = Ligamento lateral interno, LLE = Ligamento lateral externo, LCA = Ligamento cruzado anterior, MFAT = Injerto de grasa microfragmentada).`
 
 
 

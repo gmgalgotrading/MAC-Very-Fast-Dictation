@@ -1,6 +1,6 @@
 import sys
 import time
-from PySide6.QtWidgets import QApplication, QLabel, QSystemTrayIcon, QMenu, QFileDialog, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QLabel, QSystemTrayIcon, QMenu, QFileDialog
 from PySide6.QtCore import Qt, QMetaObject, QTimer
 from PySide6.QtGui import QIcon, QAction
 
@@ -12,23 +12,15 @@ class Notification:
         if not self.app:
             self.app = QApplication(sys.argv)
             
+        # Evitamos que se cierre al desaparecer ventanas
         self.app.setQuitOnLastWindowClosed(False)
 
         icon_path = "images/icon.png"
         self.app.setWindowIcon(QIcon(icon_path))
 
-        # --- SOLUCIÓN AL FONDO TRANSPARENTE: VENTANA CONTENEDORA ---
-        self.window = QWidget()
-        self.window.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.ToolTip)
-        self.window.setAttribute(Qt.WA_TranslucentBackground) # La ventana principal es transparente
-        
-        layout = QVBoxLayout(self.window)
-        layout.setContentsMargins(0, 0, 0, 0)
-        
-        # El cartel real que llevará el color gris oscuro
-        self.banner_label = QLabel("")
-        self.banner_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.banner_label)
+        self.widget = QLabel("")
+        self.widget.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.ToolTip)
+        self.widget.setAlignment(Qt.AlignCenter) # Centramos todo el texto del cartel
         
         # --- ESTADOS Y CALLBACKS ---
         self.current_mode = "consulta" 
@@ -45,9 +37,11 @@ class Notification:
         self.animation_type = "clock"
         self.anim_frame = 0
         
+        # Fotogramas de las animaciones
         self.clock_frames = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚']
-        self.record_frames = ['🔴', '⭕'] 
+        self.record_frames = ['🔴', '⭕'] # Punto rojo parpadeante
 
+        # --- CREACIÓN DEL MENÚ SUPERIOR ---
         self._setup_tray_icon(icon_path)
 
         if shutdown_callback:
@@ -56,23 +50,27 @@ class Notification:
             self.timer.start(200)
 
     def _setup_tray_icon(self, icon_path):
+        """Configura el icono y el menú desplegable en la barra de menú de macOS."""
         self.tray_icon = QSystemTrayIcon(self.app)
         self.tray_icon.setIcon(QIcon(icon_path))
 
         self.menu = QMenu()
 
+        # Opción 1: Consulta Clínica
         self.action_consulta = QAction("Modo: Consulta Clínica", self.menu)
         self.action_consulta.setCheckable(True)
         self.action_consulta.setChecked(True)
         self.action_consulta.triggered.connect(lambda: self.set_mode("consulta"))
         self.menu.addAction(self.action_consulta)
 
+        # Opción 2: Resumen de Historial
         self.action_historial = QAction("Modo: Resumen de Historial", self.menu)
         self.action_historial.setCheckable(True)
         self.action_historial.setChecked(False)
         self.action_historial.triggered.connect(lambda: self.set_mode("historial"))
         self.menu.addAction(self.action_historial)
 
+        # Opción 3: Conferencia Médica
         self.action_conferencia = QAction("Modo: Conferencia", self.menu)
         self.action_conferencia.setCheckable(True)
         self.action_conferencia.setChecked(False)
@@ -81,26 +79,31 @@ class Notification:
 
         self.menu.addSeparator()
 
+        # Información del micro (no clickeable)
         self.action_mic = QAction("🎙️ Grabar con micrófono (Doble Ctrl)", self.menu)
         self.action_mic.setEnabled(False) 
         self.menu.addAction(self.action_mic)
 
+        # Subir archivo de audio
         self.action_upload = QAction("🎵 Subir y procesar archivo de AUDIO...", self.menu)
         self.action_upload.triggered.connect(self.open_file_dialog)
         self.menu.addAction(self.action_upload)
         
         self.menu.addSeparator()
 
+        # Subir archivo de texto
         self.action_upload_text = QAction("📄 Subir y procesar archivo de TEXTO...", self.menu)
         self.action_upload_text.triggered.connect(self.open_text_file_dialog)
         self.menu.addAction(self.action_upload_text)
 
+        # Procesar desde portapapeles
         self.action_clipboard = QAction("📋 Procesar PORTAPAPELES (Doble Option/Alt)", self.menu)
         self.action_clipboard.triggered.connect(self._trigger_clipboard)
         self.menu.addAction(self.action_clipboard)
 
         self.menu.addSeparator()
 
+        # Opción: Salir
         self.action_quit = QAction("Salir de Very Fast Dictation", self.menu)
         self.action_quit.triggered.connect(self.quit)
         self.menu.addAction(self.action_quit)
@@ -153,12 +156,14 @@ class Notification:
             geom = screen.availableGeometry() 
             margin_x = 20
             margin_y = 20
-            self.window.move(
-                geom.x() + geom.width() - self.window.width() - margin_x,
+            self.widget.move(
+                geom.x() + geom.width() - self.widget.width() - margin_x,
                 geom.y() + margin_y
             )
 
+    # --- SISTEMA DE RENDERIZADO VISUAL ---
     def _update_banner_animation(self):
+        """Calcula el tiempo y avanza la animación en el cartel."""
         elapsed = int(time.time() - self.start_time)
         mins, secs = divmod(elapsed, 60)
         time_str = f"{mins:02d}:{secs:02d}"
@@ -172,61 +177,40 @@ class Notification:
 
         self.anim_frame += 1
 
+        # Maquetación HTML: El título arriba y el cronómetro gigante abajo en fuente de código
         full_html = f"""
         <div style='text-align: center;'>
             {self.current_base_text}<br><br>
-            <span style='font-size: 18px;'>
+            <span style='font-family: "Courier New", monospace; font-size: 18px; font-weight: bold;'>
                 {animated_text}
             </span>
         </div>
         """
-        self.banner_label.setText(full_html)
-        self.window.adjustSize()
+        self.widget.setText(full_html)
+        self.widget.adjustSize()
         self._position_top_right()
 
     def show_recording(self):
-        self.current_base_text = "🎙️ Grabando... (Doble Ctrl para parar)"
+        self.current_base_text = "🎙️ Grabando audio... (Doble Ctrl para parar)"
         self.animation_type = "record"
         self.start_time = time.time()
         self.anim_frame = 0
         
-        self.banner_label.setStyleSheet("""
-            QLabel {
-                background-color: rgba(15, 15, 15, 230);
-                color: #ff4444; 
-                border: 1px solid rgba(255, 68, 68, 100);
-                padding: 15px 25px; 
-                border-radius: 12px; 
-                font-family: 'Courier New';
-                font-weight: bold;
-                font-size: 14px;
-            }
-        """)
+        self.widget.setStyleSheet("background-color: #d32f2f; color: white; padding: 15px 25px; border-radius: 8px; font-size: 14px; font-weight: bold;")
         self._update_banner_animation()
-        self.banner_timer.start(500)
-        QMetaObject.invokeMethod(self.window, "show", Qt.QueuedConnection)
+        self.banner_timer.start(500) # El reloj gira cada medio segundo
+        QMetaObject.invokeMethod(self.widget, "show", Qt.QueuedConnection)
 
     def show_processing(self):
-        self.current_base_text = "⏳ Transcribiendo audio con Whisper..."
+        self.current_base_text = "⏳ Transcribiendo audio..."
         self.animation_type = "clock"
         self.start_time = time.time()
         self.anim_frame = 0
         
-        self.banner_label.setStyleSheet("""
-            QLabel {
-                background-color: rgba(15, 15, 15, 230);
-                color: #f39c12; 
-                border: 1px solid rgba(243, 156, 18, 100);
-                padding: 15px 25px; 
-                border-radius: 12px; 
-                font-family: 'Courier New';
-                font-weight: bold;
-                font-size: 14px;
-            }
-        """)
+        self.widget.setStyleSheet("background-color: #f39c12; color: white; padding: 15px 25px; border-radius: 8px; font-size: 14px; font-weight: bold;")
         self._update_banner_animation()
         self.banner_timer.start(500)
-        QMetaObject.invokeMethod(self.window, "show", Qt.QueuedConnection)
+        QMetaObject.invokeMethod(self.widget, "show", Qt.QueuedConnection)
 
     def show_structuring(self):
         modos_nombres = {"consulta": "Consulta", "historial": "Historial", "conferencia": "Conferencia"}
@@ -237,25 +221,14 @@ class Notification:
         self.start_time = time.time()
         self.anim_frame = 0
         
-        self.banner_label.setStyleSheet("""
-            QLabel {
-                background-color: rgba(15, 15, 15, 230);
-                color: #c678dd; 
-                border: 1px solid rgba(198, 120, 221, 100);
-                padding: 15px 25px; 
-                border-radius: 12px; 
-                font-family: 'Courier New';
-                font-weight: bold;
-                font-size: 14px;
-            }
-        """)
+        self.widget.setStyleSheet("background-color: #8e44ad; color: white; padding: 15px 25px; border-radius: 8px; font-size: 14px; font-weight: bold;")
         self._update_banner_animation()
         self.banner_timer.start(500)
-        QMetaObject.invokeMethod(self.window, "show", Qt.QueuedConnection)
+        QMetaObject.invokeMethod(self.widget, "show", Qt.QueuedConnection)
 
     def hide(self):
-        self.banner_timer.stop()
-        QMetaObject.invokeMethod(self.window, "hide", Qt.QueuedConnection)
+        self.banner_timer.stop() # Apagamos el reloj
+        QMetaObject.invokeMethod(self.widget, "hide", Qt.QueuedConnection)
 
     def run(self):
         return self.app.exec()

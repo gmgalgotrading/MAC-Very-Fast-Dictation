@@ -15,7 +15,7 @@ from modules.ui import Notification
 from modules.mac_paster import paste_text_natively, copiar_al_portapapeles, leer_del_portapapeles
 from modules.llm import estructurar_texto_con_ia
 from modules.vad import aislar_voz_humana 
-from modules.stream_overlay import StreamOverlay 
+from modules.stream_overlay import StreamOverlay  # NUEVO: Importamos la ventana fantasma
 import sys
 import signal
 from PySide6.QtCore import QObject, Signal, Qt
@@ -46,12 +46,14 @@ class UICommunicator(QObject):
     hide_signal = Signal()
     quit_signal = Signal()
     
+    # Señales para controlar la ventana fantasma
     show_stream_signal = Signal()
     hide_stream_signal = Signal()
     update_stream_signal = Signal(str)
 
 ui_comm = None
 
+# --- Función de CAJA NEGRA (Logs Clínicos) ---
 def guardar_log(texto_bruto, texto_estructurado, modo):
     try:
         if not os.path.exists("logs"):
@@ -63,6 +65,7 @@ def guardar_log(texto_bruto, texto_estructurado, modo):
     except Exception as e:
         print(f"⚠️ Error al guardar el log clínico: {e}")
 
+# --- Funciones de SO (macOS) ---
 def get_active_app_name():
     if sys.platform == "darwin":
         try:
@@ -80,13 +83,8 @@ def activate_app(app_name):
         except Exception:
             pass
 
-def notify_mac(message, title="Very Fast Dictation", persistent=False):
-    if persistent:
-        # Lanza una ventana de alerta fija que obliga al usuario a cerrarla manualmente
-        subprocess.run(['osascript', '-e', f'display alert "{title}" message "{message}" as informational'])
-    else:
-        # Notificación lateral normal que desaparece sola
-        subprocess.run(['osascript', '-e', f'display notification "{message}" with title "{title}" sound name "Glass"'])
+def notify_mac(message, title="Very Fast Dictation"):
+    subprocess.run(['osascript', '-e', f'display notification "{message}" with title "{title}" sound name "Glass"'])
 
 def signal_handler(sig, frame):
     global shutdown_requested, is_recording, keyboard_listener, shutdown_in_progress, ui_comm
@@ -143,14 +141,15 @@ def process_text_direct(texto_bruto, auto_paste=False):
     modo_seleccionado = notification.current_mode if notification else "consulta"
     if ui_comm: ui_comm.show_structuring_signal.emit()
     
+    # Callback que envía los datos a la ventana flotante
     def callback_stream(chunk):
         if ui_comm: ui_comm.update_stream_signal.emit(chunk)
 
-    if ui_comm: ui_comm.show_stream_signal.emit() 
+    if ui_comm: ui_comm.show_stream_signal.emit() # Mostramos la ventana
     
     texto_final = estructurar_texto_con_ia(texto_bruto, modo=modo_seleccionado, stream_callback=callback_stream)
     
-    if ui_comm: ui_comm.hide_stream_signal.emit() 
+    if ui_comm: ui_comm.hide_stream_signal.emit() # Ocultamos la ventana al terminar
     
     guardar_log(texto_bruto, texto_final, modo_seleccionado)
     
@@ -161,31 +160,17 @@ def process_text_direct(texto_bruto, auto_paste=False):
     else:
         try:
             copiar_al_portapapeles(texto_final + "\n")
-            # COMPROBACIÓN MODO CONFERENCIA PARA ALERTA PERSISTENTE
-            es_conferencia = (modo_seleccionado == "conferencia")
-            notify_mac("✅ IA completada. ¡Lista para pegar (Cmd+V)!", persistent=es_conferencia)
+            notify_mac("✅ IA completada. ¡Lista para pegar (Cmd+V)!")
         except Exception as e: print(e)
 
     if ui_comm: ui_comm.hide_signal.emit()
+
 
 def process_audio_file(file_path, is_external=False):
     global ui_comm, target_app_name, notification
     if ui_comm: ui_comm.show_processing_signal.emit()
 
-    # ⏱️ CRONÓMETRO DE WHISPER (TRANSCRIPCIÓN)
-    print("\n\033[93m⏳ Transcribiendo audio con Whisper...\033[0m")
-    tiempo_inicio_stt = time.time()
-
     transcript = transcribe(file_path)
-    
-    tiempo_total_stt = time.time() - tiempo_inicio_stt
-    minutos_stt, segundos_stt = divmod(tiempo_total_stt, 60)
-    
-    if minutos_stt > 0:
-        print(f"\033[92m✅ Transcripción completada en {int(minutos_stt)} min y {segundos_stt:.1f} seg.\033[0m\n")
-    else:
-        print(f"\033[92m✅ Transcripción completada en {segundos_stt:.1f} seg.\033[0m\n")
-
     if transcript:
         texto_limpio = re.sub(r'[\u4e00-\u9fff]+', '', transcript).strip()
         texto_limpio = re.sub(r'(.)\1{10,}', '', texto_limpio)
@@ -194,6 +179,7 @@ def process_audio_file(file_path, is_external=False):
             modo_seleccionado = notification.current_mode if notification else "consulta"
             if ui_comm: ui_comm.show_structuring_signal.emit()
             
+            # Callback que envía los datos a la ventana flotante
             def callback_stream(chunk):
                 if ui_comm: ui_comm.update_stream_signal.emit(chunk)
                 
@@ -210,9 +196,7 @@ def process_audio_file(file_path, is_external=False):
             else:
                 try:
                     copiar_al_portapapeles(texto_final + "\n")
-                    # COMPROBACIÓN MODO CONFERENCIA PARA ALERTA PERSISTENTE
-                    es_conferencia = (modo_seleccionado == "conferencia")
-                    notify_mac("✅ IA completada. ¡Lista para pegar (Cmd+V)!", persistent=es_conferencia)
+                    notify_mac("✅ IA completada. ¡Lista para pegar (Cmd+V)!")
                 except Exception as e: print(e)
     
     if ui_comm: ui_comm.hide_signal.emit()
@@ -272,10 +256,11 @@ def main():
     ui_comm.hide_signal.connect(notification.hide)
     ui_comm.quit_signal.connect(notification.quit)
 
-    ui_comm.stream_overlay = StreamOverlay()
-    ui_comm.show_stream_signal.connect(ui_comm.stream_overlay.clear_and_show)
-    ui_comm.hide_stream_signal.connect(ui_comm.stream_overlay.hide)
-    ui_comm.update_stream_signal.connect(ui_comm.stream_overlay.append_text)
+    # Conectar y mantener viva la Ventana Fantasma
+    stream_overlay = StreamOverlay()
+    ui_comm.show_stream_signal.connect(stream_overlay.clear_and_show)
+    ui_comm.hide_stream_signal.connect(stream_overlay.hide)
+    ui_comm.update_stream_signal.connect(stream_overlay.append_text)
 
     try:
         notification.setAttribute(Qt.WA_ShowWithoutActivating)
@@ -284,7 +269,7 @@ def main():
         pass
 
     print("=== VERY FAST DICTATION (MEDICAL EDITION) ===")
-    print("Aplicación lista. Interfaz de Ventana Fantasma blindada.")
+    print("Aplicación lista. Interfaz de Ventana Fantasma activada.")
     
     keyboard_listener = keyboard.Listener(on_press=on_press)
     keyboard_listener.start()

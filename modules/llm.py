@@ -4,35 +4,35 @@ import re
 import threading
 import time
 import sys
+import os
 
-# --- GLOSARIO DE TRADUCCIÓN CLÍNICA ---
-GLOSARIO_CLINICO = """
-REGLA DE TRADUCCIÓN DE METÁFORAS DEL DOCTOR:
-Cuando en la transcripción el doctor use las siguientes explicaciones o metáforas con el paciente, debes traducirlas ESTRICTAMENTE a los siguientes términos médicos en el informe:
-- "Rueda de coche poco sujeta", "traqueteo", "cloc cloc" -> Inestabilidad articular por laxitud ligamentosa.
-- "Hacer pequeñas heridas para que al cicatrizar encoja" -> Terapia regenerativa / Proloterapia ligamentosa.
-- "Sacar células de la médula ósea" -> Aspirado de médula ósea (BMAC).
-- "Sacar células de la grasa" -> Injerto de grasa microfragmentada
-- "Sacar sangre para que cure" -> Infiltración de Plasma Rico en Plaquetas (PRP) / Factores de crecimiento.
-- "Pan para hoy y hambre para mañana" -> Tratamiento puramente sintomático que no aborda la etiología mecánica.
-- "La gota que colma el vaso" -> Descompensación aguda de una patología degenerativa crónica.
-- "Bisagra oxidada" -> Artrosis severa con rigidez articular
-- "Bisagra que chirría" -> Artrosis moderada-severa con ruidos articulares
-- "Tornillos aflojados" o "anclajes débiles" -> Laxitud en la entesis e inestabilidad ligamentosa.
-- "Una obra que empezó la construcción y se dejó abandonada" -> Lesión crónica con interrupción de la cascada fisiológica de cicatrización.
-- "Reclutar más obreros y reclutar más material" -> Estímulo biológico para favorecer la regeneración tisular.
-- "Poner el aceite lubricante en el motor pero las piezas están inestables" -> Infiltración intraarticular sin corrección de la inestabilidad biomecánica subyacente.
-- "Casa en ruinas", "cimientos estropeados" o "paredes caídas" -> Artrosis crónica avanzada con daño estructural extenso (cartílago, menisco y hueso subcondral).
-- "Pintar las paredes" o "hacer una reforma a medias" -> Tratamiento paliativo aislado que fracasará a largo plazo por no abordar la unidad funcional completa.
-- "Incendio" o "volcán en erupción" -> Sinovitis activa con componente inflamatorio agudo.
-- "Tratar la articulación como un órgano" -> Abordaje terapéutico integral que combina la estabilización biomecánica con la regeneración biológica.
-"""
+def cargar_glosario_externo():
+    ruta_glosario = "diccionario_metaforas.txt"
+    if os.path.exists(ruta_glosario):
+        try:
+            with open(ruta_glosario, 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            print(f"⚠️ Error al leer el diccionario: {e}")
+            return ""
+    else:
+        print("⚠️ No se encontró el archivo 'diccionario_metaforas.txt'. Trabajando sin glosario.")
+        return ""
 
-# --- DICCIONARIO DE PROMPTS ---
 PROMPTS_SISTEMA = {
-    "consulta": f"""Actúa como un médico especialista y documentalista clínico experto. Tu tarea es analizar la transcripción bruta de una consulta médica y generar un informe clínico estructurado.
+    "consulta": """Actúa como un médico especialista y documentalista clínico experto. Tu tarea es analizar la transcripción bruta de una consulta médica y generar un informe clínico estructurado.
 
-{GLOSARIO_CLINICO}
+🚨 FILTRO DE RELEVANCIA CLÍNICA (¡PASO PREVIO!):
+Antes de hacer nada, evalúa el texto bruto. Si la transcripción es una prueba de audio (ej. "un, dos, tres"), ruido de fondo, o NO contiene absolutamente ningún dato médico, síntoma o contexto clínico, ABORTA la generación de la plantilla. Responde ÚNICA Y EXCLUSIVAMENTE con esta frase exacta y no escribas nada más:
+"La conversación no contiene datos de entrevista médico-paciente."
+
+🚨 INSTRUCCIÓN CRÍTICA DE DIARIZACIÓN SEMÁNTICA:
+La transcripción que vas a leer es un diálogo continuo sin etiquetas de hablantes. Antes de redactar, debes separar e identificar mentalmente los roles basándote estrictamente en el contexto clínico:
+- PACIENTE: Es quien describe los síntomas, la intensidad del dolor, los tiempos de evolución y el mecanismo de la lesión.
+- DOCTOR: Es quien hace las preguntas, narra la exploración física en voz alta, emite el diagnóstico y propone el tratamiento.
+Es VITAL que asignes cada dato al sujeto correcto. No atribuyas dudas del paciente al doctor, ni decisiones del doctor al paciente.
+
+{GLOSARIO_PLACEHOLDER}
 
 Debes generar ESTRICTAMENTE la siguiente estructura utilizando formato Markdown:
 
@@ -55,47 +55,15 @@ Debes generar ESTRICTAMENTE la siguiente estructura utilizando formato Markdown:
 **El Problema (Mecanismo de la Lesión):** **El Objetivo del Tratamiento:** **La Solución Propuesta:** **Justificación:** REGLAS ESTRICTAS:
 - Si un dato no aparece, escribe "No especificado".
 - Basa tu respuesta ÚNICAMENTE en la transcripción. NO inventes datos.
-
-A CONTINUACIÓN, TE MUESTRO UN EJEMPLO DE CÓMO DEBES RESPONDER. ESTO ES SOLO UN EJEMPLO DE REFERENCIA:
-
-<ejemplo_transcripcion>
-"Cuando la rodilla está en extensión completa, los ligamentos laterales deben de sujetarla y no deberían de dejar hacer estos movimientos, como ocurre en la rodilla sana, la derecha. Cuando movemos en la izquierda, sin embargo, se abre sobre todo por fuera y también por dentro y además duele ahí... [RESTO DE LA TRANSCRIPCIÓN OMITIDA POR BREVEDAD EN EL EJEMPLO]"
-</ejemplo_transcripcion>
-
-<ejemplo_respuesta_ideal>
-### SÍNTESIS PARA LA HISTORIA CLÍNICA
-
-- **Antecedentes:** Paciente varón. La lesión actual no es secundaria a un traumatismo agudo único, sino de carácter crónico y degenerativo.
-- **Motivo de consulta:** Dolor en la rodilla izquierda y sensación de inestabilidad.
-- **Tiempo de evolución:** Proceso crónico y de larga evolución, insidioso, no reciente.
-- **Sintomatología actual:** Dolor en la interlínea medial. Sensación de que la rodilla "se abre" y presenta un "traqueteo". Mejora con rodillera.
-- **Exploración física:** Bostezo lateral (externo) positivo. Bostezo medial (interno) discreto. Hidrops discreto. Cajón anterior negativo.
-- **Pruebas complementarias:** Ecografía muestra rotura del menisco interno y ligamento lateral interno laxo. RM confirma rotura horizontal del menisco interno.
-- **Diagnóstico:** Laxitud crónica de los ligamentos laterales de la rodilla izquierda. Meniscopatía interna secundaria a la inestabilidad crónica.
-- **Plan de tratamiento:** Tratamiento biológico (proloterapia o terapia regenerativa) en tres sesiones (la primera con sedación, extrayendo células de médula ósea; segunda y tercera con sangre periférica) para tensar los ligamentos laxos y tratar la lesión meniscal.
-
----
-
-### Resumen Detallado de la Consulta
-**1. Datos del Paciente:** Hombre con lesión crónica en la rodilla izquierda.
-**2. Motivo de Consulta y Síntomas:** Dolor en la cara interna (interlínea medial). Inestabilidad ("traqueteo"). El uso de rodillera alivia la inestabilidad pero, si aprieta demasiado, le provoca hinchazón distal (tobillo/pantorrilla).
-**3. Hallazgos en la Exploración Física:** Bostezo lateral positivo, bostezo medial discreto, leve derrame (hidrops) y cajón anterior negativo.
-**4. Pruebas de Imagen:** En la ecografía se observa rotura meniscal interna y destensamiento del ligamento lateral interno. La resonancia magnética confirma la rotura horizontal del menisco interno y la laxitud ligamentosa (sin rotura aguda).
-**5. Diagnóstico:** Laxitud crónica de ligamentos laterales (medial y lateral) e inestabilidad, asociada a meniscopatía interna.
-
----
-
-### Explicación y Justificación del Tratamiento Propuesto
-**El Problema (Mecanismo de la Lesión):** Los ligamentos laterales están destensados por microtraumatismos acumulados a lo largo de los años. Esta laxitud genera un movimiento anómalo ("traqueteo") que termina rompiendo el menisco.
-**El Objetivo del Tratamiento:** Corregir la inestabilidad mecánica de base (tensar los ligamentos) para evitar que la lesión progrese, abordando la causa y no solo el síntoma.
-**La Solución Propuesta:** Provocar microheridas en los ligamentos para que, al cicatrizar, el tejido se retraiga y recupere la tensión. Se realizará en 3 sesiones separadas por tres semanas: la 1ª extrayendo células de médula ósea (con sedación) y la 2ª y 3ª obteniendo factores de crecimiento de sangre periférica (sin sedación).
-**Justificación:** Trata el problema biomecánico de raíz (laxitud), utiliza el potencial biológico del paciente para la cicatrización y actúa simultáneamente sobre la tensión ligamentosa y la rotura meniscal.
-</ejemplo_respuesta_ideal>
 """,
 
-    "historial": """Actúa como un jefe de traumatología brillante y experto en síntesis clínica. Se te proporcionará un volcado bruto de notas de historia clínica con ruido administrativo y abreviaturas médicas (MO = Médula Ósea, IA = Intraarticular, LLI/LLE = Ligamentos Laterales, ECO = Ecografía, CAR = Cirugía Artroscópica, PROLO = Proloterapia, LLI = Ligamento lateral interno, LLE = Ligamento lateral externo, LCA = Ligamento cruzado anterior, MFAT = Injerto de grasa microfragmentada).
+    "historial": """Actúa como un jefe de traumatología brillante y experto en síntesis clínica. Se te proporcionará un volcado bruto de notas de historia clínica con ruido administrativo y abreviaturas médicas (MO = Médula Ósea, IA = Intraarticular, LLI/LLE = Ligamentos Laterales, ECO = Ecografía, CAR = Cirugía Artroscópica, PROLO = Proloterapia, PRP = Plasma rico en plaquetas, PPP = Plasma pobre en plaquetas, MFAT = Injerto de grasa microfreagmentado).
 
-Tu tarea es leer estos datos, filtrarlos y transformarlos en un INFORME CLÍNICO UNIFICADO, ORDENADO Y CRONOLÓGICO.
+🚨 FILTRO DE RELEVANCIA CLÍNICA:
+Si el texto proporcionado no contiene ningún dato médico ni de historial clínico (ej. es una prueba de texto aleatoria o charla trivial), ABORTA el proceso y responde ÚNICA Y EXCLUSIVAMENTE con esta frase:
+"El texto proporcionado no contiene datos válidos de historial clínico."
+
+Tu tarea es leer los datos, filtrarlos y transformarlos en un INFORME CLÍNICO UNIFICADO, ORDENADO Y CRONOLÓGICO.
 
 Debes estructurar tu respuesta ESTRICTAMENTE utilizando este formato Markdown:
 
@@ -120,57 +88,52 @@ Debes estructurar tu respuesta ESTRICTAMENTE utilizando este formato Markdown:
 
 REGLA DE ORO: NO INVENTES DATOS. Eres brillante en la justificación biológica, pero debes ser un robot calculador copiando los datos, sesiones y medicación del paciente. No asumas nada que no esté explícitamente escrito.""",
 
-    "conferencia": """Actúa como un médico especialista, catedrático y redactor científico experto. Tu tarea es analizar la transcripción bruta de una ponencia o conferencia médica y extraer la información clave para generar un resumen académico estructurado, riguroso y fácil de estudiar.
-
-Debes generar ESTRICTAMENTE la siguiente estructura utilizando formato Markdown (usa negritas y listas con viñetas para organizar visualmente la información):
-
-### 1. TEMA PRINCIPAL Y OBJETIVO DE LA PONENCIA
-(Define de forma concisa el tema central de la charla y el objetivo principal que el ponente intenta transmitir).
-
-### 2. CONCEPTOS FISIOPATOLÓGICOS Y BIOMECÁNICOS
-(Resume en viñetas los conceptos teóricos fundamentales, mecanismos de la enfermedad, anatomía o fisiopatología explicados en la charla).
-
-### 3. ARSENAL TERAPÉUTICO Y MANEJO CLÍNICO
-(Detalla en viñetas los tratamientos, fármacos, técnicas quirúrgicas o algoritmos de decisión mencionados. Explica brevemente la indicación o justificación de cada uno según el ponente).
-
-### 4. EVIDENCIA CIENTÍFICA Y CASOS PRÁCTICOS
-(Describe los estudios clínicos, estadísticas, artículos o ejemplos de casos de pacientes que el ponente haya utilizado para ilustrar su postura. Si no menciona ninguno, escribe "No se han detallado casos o estudios específicos").
-
-### 5. CONCLUSIONES CLAVE (TAKE-HOME MESSAGES)
-(Extrae en una lista de 3 a 5 puntos fundamentales los mensajes más importantes que el ponente quiere que la audiencia recuerde).
+    "conferencia_parcial": """Actúa como un asistente médico de investigación. Vas a leer un FRAGMENTO de una conferencia médica.
+Tu tarea es extraer los datos médicos, tratamientos y conclusiones de este fragmento para que luego otro médico los unifique.
 
 REGLAS ESTRICTAS:
-- Utiliza un lenguaje médico, académico y profesional.
-- Basa tu respuesta ÚNICAMENTE en la transcripción proporcionada. NO inventes datos, porcentajes, estudios ni tratamientos que no haya dicho el ponente.
-- NO añadas texto introductorio (como "Aquí está el resumen") ni de despedida. Empieza directamente por el primer título."""
+1. FILTRA EL RUIDO: Ignora por completo anécdotas personales, chascarrillos, saludos o paja.
+2. CORRIGE LA TRANSCRIPCIÓN: Detecta y corrige mentalmente el "Spanglish" (ej. "capacity natural de curación and regeneration") y los errores evidentes del micrófono (ej. si dice "gluco cultura", asume que es "glucopuntura").
+3. SÍNTESIS EXTREMA: Sé muy conciso. Extrae solo la "carne" científica. Agrupa conceptos, no hagas listas interminables.
+4. FILTRO DE RELEVANCIA: Si el fragmento es solo charla trivial o una prueba de micrófono sin valor médico, devuelve EXACTAMENTE la frase "Sin datos médicos relevantes en este bloque".
+🚨 REGLA DE IDIOMA INQUEBRANTABLE: DEBES REDACTAR TU RESPUESTA ÚNICA Y EXCLUSIVAMENTE EN ESPAÑOL DE ESPAÑA. TRADUCE TODO TÉRMINO EN INGLÉS AL ESPAÑOL MÉDICO.""",
+
+    "conferencia": """Actúa como un médico especialista, catedrático y redactor científico experto. Tu tarea es analizar transcripciones brutas (o resúmenes parciales) de una ponencia y generar un resumen académico magistral, estructurado y fácil de estudiar.
+
+🚨 FILTRO DE RELEVANCIA CLÍNICA:
+Si el texto bruto proporcionado es una prueba de audio sin sentido o no contiene datos médicos de una ponencia, ABORTA el proceso y responde ÚNICA Y EXCLUSIVAMENTE:
+"El texto proporcionado no contiene datos válidos de una conferencia médica."
+
+🚨 REGLAS CRÍTICAS PARA LA REDACCIÓN (ANTI-FRANKENSTEIN):
+1. FUSIÓN Y COHESIÓN: Redacta párrafos hilados y fluidos. Si varios casos clínicos demuestran lo mismo, agrúpalos en un solo concepto. NO hagas listas de la compra repetitivas ni apiles viñetas que digan lo mismo con distintas palabras.
+2. TRADUCCIÓN Y CORRECCIÓN: El texto original puede contener "Spanglish" o errores del micrófono. Ignora ese ruido. 
+3. ELIMINACIÓN DE PAJA: Omite cualquier referencia a anécdotas, tiempos de la charla, pausas o preguntas irrelevantes.
+4. REGLA DE IDIOMA INQUEBRANTABLE: TODA LA REDACCIÓN FINAL, SIN EXCEPCIÓN, DEBE GENERARSE EN ESPAÑOL DE ESPAÑA.
+
+Debes generar ESTRICTAMENTE la siguiente estructura utilizando formato Markdown (usa negritas y listas agrupadas para organizar visualmente la información):
+
+### 1. TEMA PRINCIPAL Y OBJETIVO DE LA PONENCIA
+(Define de forma concisa el tema central y el objetivo principal).
+
+### 2. CONCEPTOS FISIOPATOLÓGICOS Y BIOMECÁNICOS
+(Sintetiza la base teórica y anatómica. Agrupa las ideas afines para que la lectura sea fluida).
+
+### 3. ARSENAL TERAPÉUTICO Y MANEJO CLÍNICO
+(Detalla los tratamientos, fármacos, concentraciones y técnicas quirúrgicas. Agrupa por técnica, ej. "Proloterapia: indicaciones y uso", "PRP: indicaciones y uso").
+
+### 4. EVIDENCIA CIENTÍFICA Y CASOS PRÁCTICOS
+(Agrupa los casos clínicos por patología o técnica utilizada. Sintetiza la evolución sin redundancias. Si no hay casos, indica "No se han detallado casos").
+
+### 5. CONCLUSIONES CLAVE (TAKE-HOME MESSAGES)
+(Extrae un máximo de 5 puntos fundamentales, directos y potentes que resuman la esencia de la ponencia)."""
 }
 
-
-def estructurar_texto_con_ia(texto_bruto: str, modo: str = "consulta") -> str:
-    """Envía la transcripción a Ollama usando el endpoint nativo de CHAT."""
-    
-    if len(texto_bruto.strip()) < 20:
-        return texto_bruto
-
-    instrucciones_sistema = PROMPTS_SISTEMA.get(modo, PROMPTS_SISTEMA["consulta"])
-
-# --- EL SEMÁFORO INTELIGENTE (ENRUTAMIENTO DINÁMICO) ---
-    if modo == "conferencia":
-        modelo_ia = "qwen3.5"   # Artillería pesada
-        recordatorio = "ATENCIÓN: Recuerda aplicar estrictamente la plantilla de los 5 apartados."
-    elif modo == "historial":
-        # ¡AQUÍ ESTÁ EL CAMBIO! Ponemos a DeepSeek-R1 al mando de los historiales
-        modelo_ia = "deepseek-r1:14b"  # Cambia a "14b" si descargaste la versión más grande
-        recordatorio = "ATENCIÓN: Invierte el orden de las fechas para que la evolución sea cronológica. Ignora la burocracia. Redacta una justificación médica brillante basándote en los datos reales del paciente."
-    else:
-        modelo_ia = "qwen2.5"   # Consulta (Rápido y letal con el Few-Shot)
-        recordatorio = "ATENCIÓN: Responde utilizando ESTRICTAMENTE la estructura Markdown indicada en el sistema. No olvides usar las **negritas** en los títulos de cada apartado tal y como se muestra en el ejemplo. No añadas nada más."
-    
+def _llamar_ollama(instrucciones_sistema, texto_usuario, modelo_ia, mensaje_spinner="Analizando texto...", stream_callback=None):
     payload = {
         "model": modelo_ia,
         "messages": [
             {"role": "system", "content": instrucciones_sistema},
-            {"role": "user", "content": f"Aquí tienes el texto bruto:\n\n{texto_bruto}\n\n{recordatorio}"}
+            {"role": "user", "content": texto_usuario}
         ],
         "stream": True,
         "options": {
@@ -179,33 +142,43 @@ def estructurar_texto_con_ia(texto_bruto: str, modo: str = "consulta") -> str:
         }
     }
 
-    # --- CONFIGURACIÓN DEL SPINNER ANIMADO ---
-    evento_parar = threading.Event()
+    estado_spinner = {"mensaje": mensaje_spinner, "activo": True}
     
     def animacion_spinner():
-        caracteres = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        # Separé el spinner de la consola (puntos) del de la Ventana Fantasma (Relojes)
+        caracteres_term = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+        caracteres_gui = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚']
         i = 0
-        while not evento_parar.is_set():
-            sys.stdout.write(f'\r\033[93;40m {caracteres[i % len(caracteres)]} Despertando a {modelo_ia.upper()} y analizando texto... \033[0m')
+        
+        while estado_spinner["activo"]:
+            texto_terminal = estado_spinner["mensaje"].ljust(60)
+            char_term = caracteres_term[i % len(caracteres_term)]
+            
+            # Pinta los puntos clásicos solo en la consola negra
+            sys.stdout.write(f'\r\033[93;40m {char_term} {texto_terminal} \033[0m')
             sys.stdout.flush()
-            time.sleep(0.1)
+            
+            # --- ENVÍA LOS RELOJES ANIMADOS A LA VENTANA FANTASMA ---
+            if stream_callback:
+                char_gui = caracteres_gui[i % len(caracteres_gui)]
+                stream_callback(f"__SPINNER__ {char_gui}  {estado_spinner['mensaje']}  {char_gui}")
+                
+            time.sleep(0.2) # Velocidad ajustada para que los relojes giren elegantes (5 frames por seg)
             i += 1
 
     hilo_spinner = threading.Thread(target=animacion_spinner)
     hilo_spinner.start()
 
+    tiempo_inicio = time.time()
+
     try:
         respuesta = requests.post("http://localhost:11434/api/chat", json=payload, stream=True)
         respuesta.raise_for_status()
         
-        evento_parar.set()
-        hilo_spinner.join()
-        sys.stdout.write('\r' + ' ' * 80 + '\r')
-        sys.stdout.flush()
-        
+        # --- LA IA DESPIERTA: CAMBIAMOS EL TEXTO DEL CARTEL NARANJA AL VUELO ---
+        estado_spinner["mensaje"] = f"REDACTANDO CON IA ({modelo_ia.upper()})..."
+            
         texto_estructurado = ""
-        print(f"\033[96;40m--- REDACTANDO CON IA ({modelo_ia.upper()} EN DIRECTO - MODO {modo.upper()}) ---\033[0m")
-        print("\033[96;40m", end="")
         
         for linea in respuesta.iter_lines():
             if linea:
@@ -214,40 +187,102 @@ def estructurar_texto_con_ia(texto_bruto: str, modo: str = "consulta") -> str:
                     fragmento = datos.get("message", {}).get("content", "")
                     texto_estructurado += fragmento
                     
-                    if "<think>" in fragmento:
-                        print("\033[90;40m", end="") 
-                        
-                    print(fragmento, end="", flush=True)
-                    
-                    if "</think>" in fragmento:
-                        print("\033[0m\n\033[96;40m", end="") 
+                    if stream_callback:
+                        stream_callback(fragmento)
                         
                 except json.JSONDecodeError:
                     pass
-                    
-        print("\033[0m\n\033[96;40m--------------------------------------\033[0m\n")
         
-        texto_final_limpio = re.sub(r'<think>.*?</think>', '', texto_estructurado, flags=re.DOTALL).strip()
+        # --- TERMINA DE ESCRIBIR: APAGAMOS EL RELOJ ---
+        estado_spinner["activo"] = False
+        hilo_spinner.join() 
         
-        return texto_final_limpio
+        sys.stdout.write('\r' + ' ' * 80 + '\r')
+        sys.stdout.flush()
+        
+        # Borramos el cartel naranja de la Ventana Fantasma
+        if stream_callback:
+            stream_callback("__SPINNER_CLEAR__")
+        
+        tiempo_total = time.time() - tiempo_inicio
+        minutos, segundos = divmod(tiempo_total, 60)
+        
+        if minutos > 0:
+            print(f"\033[92m✅ Tarea completada en {int(minutos)} min y {segundos:.1f} seg.\033[0m\n")
+        else:
+            print(f"\033[92m✅ Tarea completada en {segundos:.1f} seg.\033[0m\n")
+        
+        return re.sub(r'<think>.*?</think>', '', texto_estructurado, flags=re.DOTALL).strip()
         
     except Exception as e:
-        evento_parar.set()
+        estado_spinner["activo"] = False
         hilo_spinner.join()
         sys.stdout.write('\r' + ' ' * 80 + '\r')
         sys.stdout.flush()
         
+        if stream_callback:
+            stream_callback("__SPINNER_CLEAR__")
+            
         print(f"\n\033[91;40mError al conectar con la IA local: {e}\033[0m")
-        return f"--- ERROR DE ESTRUCTURACIÓN ---\n\n{texto_bruto}"
+        return f"--- ERROR DE ESTRUCTURACIÓN ---\n\n{texto_usuario}"
 
-    # ANTIGUO PROMPT SISTEMA
 
-    #prompt_sistema = """Eres un asistente médico experto. Toma esta transcripción de una consulta y conviértela en una historia clínica estructurada en formato SOAP (Subjetivo, Objetivo, Análisis, Plan).
-    #Reglas estrictas:
-    #1. Extrae ÚNICAMENTE información clínicamente relevante. Ignora saludos y charla trivial.
-    #2. Utiliza lenguaje médico técnico, profesional y objetivo (ej. cambia "me duele la rodilla al doblarla" por "gonalgia a la flexión").
-    #3. Si un apartado no se menciona en la conversación, pon "No se especifican datos".
-    #4. Devuelve SOLO el texto formateado final, listo para ser pegado. No hagas introducciones ni uses código."""
+def estructurar_texto_con_ia(texto_bruto: str, modo: str = "consulta", stream_callback=None) -> str:
+    if len(texto_bruto.strip()) < 20:
+        return texto_bruto
 
-            #"repeat_penalty": 1.05,   # <-- CORRECCIÓN: Relajamos el castigo para que escriba fluido
-            #"num_predict": 1500       # El freno físico contra bucles infinitos se mantiene
+    instrucciones_sistema = PROMPTS_SISTEMA.get(modo, PROMPTS_SISTEMA["consulta"])
+
+    if modo == "consulta":
+        glosario_actual = cargar_glosario_externo()
+        if glosario_actual:
+            bloque_traduccion = "REGLA DE TRADUCCIÓN DE METÁFORAS DEL DOCTOR:\nCuando en la transcripción el doctor use las siguientes explicaciones o metáforas con el paciente, debes traducirlas ESTRICTAMENTE a los siguientes términos médicos en el informe:\n" + glosario_actual
+            instrucciones_sistema = instrucciones_sistema.replace("{GLOSARIO_PLACEHOLDER}", bloque_traduccion)
+        else:
+            instrucciones_sistema = instrucciones_sistema.replace("{GLOSARIO_PLACEHOLDER}", "")
+            
+        modelo_ia = "qwen2.5"
+        texto_usuario = f"Aquí tienes el texto bruto:\n\n{texto_bruto}\n\nATENCIÓN: Responde utilizando ESTRICTAMENTE la estructura Markdown indicada en el sistema."
+        return _llamar_ollama(instrucciones_sistema, texto_usuario, modelo_ia, f"Despertando a {modelo_ia.upper()} (Modo CONSULTA)...", stream_callback)
+
+    elif modo == "historial":
+        modelo_ia = "deepseek-r1:14b"
+        texto_usuario = f"Aquí tienes el texto bruto:\n\n{texto_bruto}\n\nATENCIÓN: Invierte el orden cronológico. Redacta una justificación brillante basándote solo en los datos reales."
+        return _llamar_ollama(instrucciones_sistema, texto_usuario, modelo_ia, f"Despertando a {modelo_ia.upper()} (Modo HISTORIAL)...", stream_callback)
+
+    elif modo == "conferencia":
+        modelo_ia = "deepseek-r1:14b"
+        palabras = texto_bruto.split()
+        
+        LIMITE_PALABRAS = 6000
+        
+        if len(palabras) > LIMITE_PALABRAS:
+            print(f"\n\033[93m⚠️ Conferencia muy larga detectada ({len(palabras)} palabras). Activando Troceador Inteligente...\033[0m")
+            fragmentos = []
+            
+            for i in range(0, len(palabras), LIMITE_PALABRAS):
+                inicio = max(0, i - 100) if i > 0 else 0
+                fragmento = " ".join(palabras[inicio:i + LIMITE_PALABRAS])
+                fragmentos.append(fragmento)
+            
+            resumenes_parciales = []
+            instrucciones_parciales = PROMPTS_SISTEMA["conferencia_parcial"]
+            
+            for idx, frag in enumerate(fragmentos):
+                print(f"\n\033[96m--- PROCESANDO BLOQUE {idx + 1} DE {len(fragmentos)} ---\033[0m")
+                texto_usuario_parcial = f"Fragmento de conferencia ({idx + 1}/{len(fragmentos)}):\n\n{frag}\n\nExtrae los conceptos clínicos ignorando el ruido y el Spanglish. 🚨 RECUERDA: ESCRIBE TU RESPUESTA ÚNICA Y EXCLUSIVAMENTE EN ESPAÑOL DE ESPAÑA."
+                
+                resumen = _llamar_ollama(instrucciones_parciales, texto_usuario_parcial, modelo_ia, f"Analizando bloque {idx + 1} de {len(fragmentos)}...", stream_callback)
+                if resumen:
+                    resumenes_parciales.append(resumen)
+            
+            print("\n\033[92m✨ FUSIONANDO y unificando todos los resúmenes parciales...\033[0m")
+            texto_unificado = "\n\n--- SIGUIENTE BLOQUE DE LA CONFERENCIA ---\n\n".join(resumenes_parciales)
+            
+            texto_usuario_final = f"Aquí tienes los resúmenes parciales de una conferencia muy larga:\n\n{texto_unificado}\n\nATENCIÓN CRÍTICA: FUSIONA los conceptos repetidos. Elimina redundancias. Redacta un documento fluido y brillante aplicando estrictamente la plantilla de los 5 apartados. 🚨 RECUERDA: REDACTA ABSOLUTAMENTE TODO EL DOCUMENTO EN ESPAÑOL DE ESPAÑA."
+            
+            return _llamar_ollama(instrucciones_sistema, texto_usuario_final, modelo_ia, "Sintetizando resumen final de conferencia...", stream_callback)
+            
+        else:
+            texto_usuario = f"Aquí tienes la transcripción bruta de la conferencia:\n\n{texto_bruto}\n\nATENCIÓN CRÍTICA: Recuerda ignorar el Spanglish, corregir términos mal transcritos y aplicar estrictamente la plantilla académica de los 5 apartados. 🚨 REDACTA TODO ESTRICTAMENTE EN ESPAÑOL DE ESPAÑA."
+            return _llamar_ollama(instrucciones_sistema, texto_usuario, modelo_ia, f"Despertando a {modelo_ia.upper()} (Modo CONFERENCIA)...", stream_callback)
