@@ -128,9 +128,7 @@ Al hacer clic en el icono de la barra de menú, se desplegarán todas las opcion
 # A. Selección de Modo de IA (El Cerebro):
 Antes de introducir ningún texto o audio, debes elegir cómo quieres que la IA procese la información.
 
-```
 ![Menú de Opciones](images/menu_opciones.png)
-```
 
 🧠 Modo: Consulta Clínica (Por Defecto): Optimizado para estructurar diálogos médico-paciente en tiempo real. Utiliza el glosario de metáforas y genera un informe SOAP.
 
