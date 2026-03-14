@@ -113,14 +113,62 @@ uv sync
 
 **3. Diccionario de Metáforas (Opcional):** Puedes crear un archivo llamado `diccionario_metaforas.txt` en la raíz del proyecto para que la IA sepa cómo traducir tus explicaciones habituales a los pacientes a lenguaje médico técnico.
 
-**4. Ejecutar la aplicación:**
+**4. ▶️ Cómo Usar la Aplicación**
 
-Bash
+1. **Inicia el programa:**
+   Abre tu terminal y ejecuta:
+   ```bash
+   uv run main.py
 
-```
-uv run main.py
-```
+La aplicación comenzará a ejecutarse silenciosamente en segundo plano. Verás aparecer el icono de Very Fast Dictation en la barra de menú superior derecha de tu Mac.
 
+**El Centro de Mandos (Menú Superior):**
+Al hacer clic en el icono de la barra de menú, se desplegarán todas las opciones de procesamiento de la aplicación.
+
+# A. Selección de Modo de IA (El Cerebro):
+Antes de introducir ningún texto o audio, debes elegir cómo quieres que la IA procese la información.
+
+🧠 Modo: Consulta Clínica (Por Defecto): Optimizado para estructurar diálogos médico-paciente en tiempo real. Utiliza el glosario de metáforas y genera un informe SOAP.
+
+🧠 Modo: Resumen de Historial: Diseñado para ordenar cronológicamente volcados de texto caóticos, pruebas y cirugías previas, proponiendo un plan terapéutico justificado.
+
+🧠 Modo: Conferencia: Preparado para textos masivos. Activa el "Troceador Inteligente" para conferencias largas, elimina el Spanglish y extrae conclusiones académicas.
+
+# B. Métodos de Entrada de Datos:
+Una vez elegido el modo, tienes 4 formas de enviar información a la IA:
+
+🎙️ Grabar con micrófono (Doble Ctrl): Es la vía principal para la Consulta Clínica. Sitúa el cursor en tu software médico y pulsa la tecla Control (Ctrl) dos veces rápidas. Aparecerá un cartel de "Grabando...". Habla con tu paciente y pulsa Ctrl una vez para detener y procesar.
+
+🎵 Subir y procesar archivo de AUDIO: Abre un explorador de archivos para seleccionar grabaciones médicas previas (.mp3, .wav, .m4a). Ideal para transcribir ponencias o notas de voz grabadas con el móvil.
+
+📄 Subir y procesar archivo de TEXTO: Permite cargar documentos médicos extensos (.txt, .md), perfecto para procesar historiales largos o transcripciones de conferencias enteras.
+
+📋 Procesar PORTAPAPELES (Doble Option/Alt): Selecciona cualquier texto en tu Mac (un PDF, un email, notas), cópialo (Cmd + C) y pulsa la tecla Option / Alt (⌥) dos veces rápidas. La IA lo leerá instantáneamente desde la memoria.
+
+# CONSULTA CLINICA
+Empieza a dictar:
+
+Sitúa el cursor en cualquier campo de texto de cualquier aplicación (tu software de historia clínica, Word, un email, etc.).
+
+Pulsa la tecla **Control (Ctrl) dos veces rápidas** para empezar a grabar.
+
+Verás aparecer un elegante cartel translúcido en la esquina superior derecha indicando "🎙️ Grabando...".
+
+Dicta tu evolución clínica o notas médicas.
+
+Pulsa la tecla **Control (Ctrl) una sola vez para detener** la grabación.
+
+# La Magia de la IA:
+
+El sistema aislará tu voz del ruido de fondo, transcribirá el texto y la Inteligencia Artificial comenzará a estructurarlo.
+
+Podrás ver cómo la IA redacta el texto en tiempo real en la "Ventana Fantasma".
+
+Al terminar, el informe clínico definitivo se pegará instantáneamente en la ventana donde dejaste el cursor.
+
+(💡 Tip: Recuerda que también puedes seleccionar cualquier texto caótico, copiarlo y pulsar la tecla Option / Alt dos veces rápidas para que la IA lo procese directamente desde el portapapeles).
+
+Resultado: Si usaste un atajo de teclado, el texto final se pegará automáticamente donde dejaste el cursor. Si procesaste un archivo o conferencia larga, el texto se copiará en tu portapapeles y macOS lanzará una Alerta Persistente en pantalla para avisarte de que el informe está listo para ser pegado (Cmd + V).
 ------
 
 ## ⌨️ Flujo de Trabajo (Atajos Rápídos)
@@ -134,6 +182,24 @@ Una vez que la aplicación esté corriendo (verás el icono en la barra superior
 Al terminar, la aplicación pegará automáticamente el resultado si tienes un editor de texto abierto, o lo guardará en el portapapeles lanzando una **Alerta Persistente de macOS** para que nunca pierdas el informe. Además, se guarda una copia de seguridad en la carpeta local `logs/`.
 
 ------
+## 🛠️ Problemas Comunes
+    
+   📋 **El texto estructurado no se pega automáticamente** 
+
+Si la aplicación graba, transcribe y muestra el texto final en la Ventana Fantasma, pero una vez terminada la tarea no pega el resultado en tu pantalla, significa que macOS está bloqueando a la aplicación. Debes concederle permisos de Accesibilidad al programa que esté ejecutando este script de Python.
+
+Ve a Ajustes del Sistema -> Privacidad y seguridad -> Accesibilidad.
+
+Asegúrate de que el interruptor esté activado para tu terminal (ej. Terminal, VS Code, Cursor o iTerm).
+
+💡 Consejo Pro: Si por motivos de seguridad no quieres darle permisos totales de accesibilidad a tu terminal principal o a tu editor de código, instala una segunda aplicación de terminal (como Warp o iTerm). Usa esta segunda terminal exclusivamente para ejecutar Very Fast Dictation. De este modo, podrás otorgarle los permisos de accesibilidad de forma totalmente segura y aislada.
+
+    🎙️ **El cartel de grabando aparece pero falla la transcripción**  
+
+Asegúrate de que la terminal tiene permiso para usar tu micrófono.
+
+Ve a Ajustes del Sistema -> Privacidad y seguridad -> Micrófono y comprueba que la pestaña de tu terminal esté activada.
+------
 
 ## 🔒 Privacidad y Aviso Legal
 
@@ -146,59 +212,3 @@ Esta aplicación está diseñada bajo el principio de **Privacidad por Diseño (
 
 *Desarrollado con ❤️ para optimizar el tiempo médico y recuperar el contacto humano en la consulta.*
 
-
-
-## 📹 Demo
-
-https://github.com/user-attachments/assets/c1a1f4d8-dc97-40a3-8e49-0b31021e100b
-
-## ⚙️ Installation
-
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/aviaryan/Very-Fast-Dictation.git
-    cd Very-Fast-Dictation
-    ```
-
-2.  **Install dependencies:**
-    This project uses [uv](https://github.com/astral-sh/uv) for package management. Once you have `uv` installed, run the following command to install the required packages:
-
-    ```sh
-    uv sync
-    ```
-    This will install all necessary dependencies including `parakeet-mlx`, `pynput`, `pyside6` and others.
-
-## ▶️ How to Use
-
-1.  **Run the application:**
-    ```sh
-    uv run main.py
-    ```
-    The application will start running in the background.
-
-2.  **Start Dictating:**
-    -   Go to any text field in any application.
-    -   Press the `Control` key twice rapidly to start recording.
-    -   You will see a "Recording..." label appear on your screen at the center.
-    -   Begin speaking.
-    -   Press the `Control` key once to stop.
-    -   The transcribed text will be instantly pasted to your active screen.
-
-## 👨🏻‍💻 Dev
-
-For linting and formatting -
-
-```sh
-uv run ruff check
-uv run ruff format
-```
-
-## 🛠️ Common Issues
-
-### 📋 Transcribed text isn't pasting
-
-If you are able to record text but it doesn't paste anything once recording is done, make sure to give the following access to the application running this Python script.
-
-Eg - If you are running this script on your `Terminal.app`, go to System Settings -> Privacy & Security -> Accessibility and make sure the toggle is turned on for `Terminal`.
-
-**Tip** - If you don't want to give full accessibility permissions to your Terminal or code editor, install a second terminal app like Warp or iTerm. Use this second-terminal for running this application only. Now, you can safely give accessibility permissions to this terminal app as you will not be using it for anything else.
